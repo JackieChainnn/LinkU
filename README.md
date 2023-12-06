@@ -56,3 +56,10 @@ This project is a recruitment platform for internal use. It is a platform where 
 - [Microsoft Login](https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-overview)
 
 ## Getting Started
+
+### Configure Database
+
+> for sercurity, you should save this connection string in environment variable
+
+    dotnet user-secrets init
+    dotnet user-secrets set "ConnectionStrings:AppIdentityDbContextConnection" "Data Source=..."

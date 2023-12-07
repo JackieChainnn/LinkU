@@ -4,6 +4,7 @@ using LinkU.Areas.Identity.Data;
 using Microsoft.AspNetCore.Authorization;
 using LinkU.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using QRCoder;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("AppIdentityDbContextConnection") ?? throw new InvalidOperationException("Connection string 'AppIdentityDbContextConnection' not found.");
 
@@ -19,6 +20,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
+builder.Services.AddSingleton(new QRCodeService(new QRCodeGenerator()));
 
 // TODO: Add custom authorization policies
 builder.Services.AddAuthorization();

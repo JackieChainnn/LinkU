@@ -63,3 +63,5 @@ This project is a recruitment platform for internal use. It is a platform where 
 
     dotnet user-secrets init
     dotnet user-secrets set "ConnectionStrings:AppIdentityDbContextConnection" "Data Source=..."
+
+Test branch protection

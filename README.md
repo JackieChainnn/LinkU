@@ -57,11 +57,25 @@ This project is a recruitment platform for internal use. It is a platform where 
 
 ## Getting Started
 
+      git clone https://github.com/JackieChainnn/LinkU.git
+
+At root folder run following commands
+
 ### Configure Database
 
-> for sercurity, you should save this connection string in environment variable
+> Configure connection string for Identity database.For sercurity, you should save this connection string in environment variable
 
     dotnet user-secrets init
     dotnet user-secrets set "ConnectionStrings:AppIdentityDbContextConnection" "Data Source=..."
 
-Test branch protection
+### Run App
+
+> Run command to create database
+
+      dotnet ef database update
+
+> Run command to run app
+
+      dotnet dev-certs https --trust
+
+      dotnet run --launch-profile https

@@ -47,6 +47,7 @@ This project is a recruitment platform for internal use. It is a platform where 
 
 ### Third-party services
 
+- [QRCoder](https://www.nuget.org/packages/QRCoder/)
 - [SendGrid](https://sendgrid.com/)
 - [Google Analytics](https://analytics.google.com/)
 - [Google Maps](https://cloud.google.com/maps-platform/)

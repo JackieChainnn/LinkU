@@ -18,10 +18,16 @@ namespace LinkU.Areas.Identity.Pages.Account
     public class ConfirmEmailModel : PageModel
     {
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IConfiguration Configuration;
 
-        public ConfirmEmailModel(UserManager<ApplicationUser> userManager)
+        public ConfirmEmailModel(UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,
+            IConfiguration configuration)
         {
             _userManager = userManager;
+            _roleManager = roleManager;
+            Configuration = configuration;
         }
 
         /// <summary>
@@ -46,7 +52,28 @@ namespace LinkU.Areas.Identity.Pages.Account
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
             var result = await _userManager.ConfirmEmailAsync(user, code);
             StatusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
+
+            // get admin emails from appsettings.json
+            var adminEmails = Configuration.GetSection("AdminEmail").Get<string[]>();
+            if (result.Succeeded)
+            {
+                var isAdmin = adminEmails.Any(adminEmail => string.Compare(user.Email, adminEmail, true) == 0 ? true : false);
+                if (isAdmin)
+                {
+                    await CheckRoleAsync("Administator");
+                    await _userManager.AddToRoleAsync(user, "Administator");
+                }
+            }
             return Page();
+        }
+
+        // check existing role, otherwise create specified role
+        private async Task CheckRoleAsync(string roleName)
+        {
+            if (!await _roleManager.RoleExistsAsync(roleName))
+            {
+                await _roleManager.CreateAsync(new IdentityRole(roleName));
+            }
         }
     }
 }

@@ -3,8 +3,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace LinkU.Areas.Identity.Data;
 
-// Change the primary key type
-public class ApplicationUser : IdentityUser<Guid>
+public class ApplicationUser : IdentityUser
 {
       [StringLength(450)]
       public string? Address { get; set; }

@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using LinkU.Models;
-using Microsoft.AspNetCore.Identity;
 
 namespace LinkU.Areas.Identity.Data;
 

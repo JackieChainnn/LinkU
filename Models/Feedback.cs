@@ -17,6 +17,7 @@ public partial class Feedback
     [DataType(DataType.Date)]
     public DateOnly? TimeStamp { get; set; }
 
+    [Required]
     [Column("Feedback")]
     [StringLength(450)]
     public string? FeedbackContent { get; set; }

@@ -26,6 +26,13 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home"
                                 asp-action="Privacy">Privacy</a>
                         </li>
+                        @if (User.IsInRole("Administrator"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Admin"
+                                    asp-action="Index">Admin</a>
+                            </li>
+                        }
                     </ul>
                     @* Add the sign-in and registration links *@
                     <partial name="_LoginPartial" />

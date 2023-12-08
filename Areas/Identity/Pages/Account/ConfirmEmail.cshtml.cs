@@ -60,8 +60,8 @@ namespace LinkU.Areas.Identity.Pages.Account
                 var isAdmin = adminEmails.Any(adminEmail => string.Compare(user.Email, adminEmail, true) == 0 ? true : false);
                 if (isAdmin)
                 {
-                    await CheckRoleAsync("Administator");
-                    await _userManager.AddToRoleAsync(user, "Administator");
+                    await CheckRoleAsync("Administrator");
+                    await _userManager.AddToRoleAsync(user, "Administrator");
                 }
             }
             return Page();

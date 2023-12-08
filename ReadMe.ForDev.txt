@@ -9,3 +9,7 @@ Use the correct fully qualified name for your DB context:
       dotnet aspnet-codegenerator identity -dc MyApplication.Data.ApplicationDbContext --files "Account.Register;Account.Login;Account.Logout"
 
 If you run the Identity scaffolder without specifying the --files flag or the --useDefaultUI flag, all the available Identity UI pages are created in the project.
+
+For more information about Role-based Identity:
+
+      https://www.yogihosting.com/aspnet-core-identity-roles/

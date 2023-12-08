@@ -10,9 +10,8 @@ namespace LinkU.Models;
 [Table("SupportRequest")]
 public partial class SupportRequest
 {
-    [Key]
     [Column("ID")]
-    public string Id { get; set; } = null!;
+    public string Id { get; private set; }
 
     [Required]
     [Column("CustomerID")]
@@ -45,6 +44,11 @@ public partial class SupportRequest
 
     [InverseProperty("Request")]
     public virtual ICollection<SupportResponse> SupportResponses { get; set; } = new List<SupportResponse>();
+
+    public SupportRequest()
+    {
+        Id = Guid.NewGuid().ToString()[..6];
+    }
 }
 
 public enum SupportRequestStatus

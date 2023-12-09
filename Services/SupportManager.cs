@@ -22,8 +22,10 @@ public class SupportManager : ISupportManager
             _logger = logger;
       }
       //  ClaimsPrincipal is used to access the user's information in a secure and standardized way.
-      public async Task<SupportRequest> CreateSupportRequestAsync(string title, string description, string userId)
+      public async Task<SupportRequest> CreateSupportRequestAsync(string title, string description, ClaimsPrincipal user)
       {
+
+            var userId = _userManager.GetUserId(user) ?? throw new InvalidOperationException("User not found.");
             var supportRequest = new SupportRequest
             {
                   Title = title,
@@ -46,13 +48,17 @@ public class SupportManager : ISupportManager
                   var supportRequest = await _context.SupportRequests.FindAsync(id)
                         ?? throw new DbUpdateConcurrencyException("Support request not found.");
 
-                  if (supportRequest.CustomerId != userId)
+                  // employee can delete any support request
+                  if (user.IsInRole("Employee") || supportRequest.CustomerId == userId)
+                  {
+                        _context.SupportRequests.Remove(supportRequest);
+                        await _context.SaveChangesAsync();
+                  }
+                  else
                   {
                         throw new InvalidOperationException("User not authorized." + userId);
                   }
 
-                  _context.SupportRequests.Remove(supportRequest);
-                  await _context.SaveChangesAsync();
                   return true;
             }
             catch (Exception e)
@@ -72,16 +78,19 @@ public class SupportManager : ISupportManager
                   string userId = _userManager.GetUserId(user) ??
                         throw new InvalidOperationException("User not found.");
 
-                  if (supportRequest.CustomerId != userId)
+                  // employee can edit any support request
+                  if (user.IsInRole("Employee") || supportRequest.CustomerId == userId)
+                  {
+                        supportRequest.Title = title;
+                        supportRequest.Description = description;
+                        supportRequest.UpdatedAt = DateOnly.FromDateTime(DateTime.UtcNow);
+
+                        await _context.SaveChangesAsync();
+                  }
+                  else
                   {
                         throw new InvalidOperationException("User not authorized." + userId);
                   }
-
-                  supportRequest.Title = title;
-                  supportRequest.Description = description;
-                  supportRequest.UpdatedAt = DateOnly.FromDateTime(DateTime.UtcNow);
-
-                  await _context.SaveChangesAsync();
                   return supportRequest;
             }
             catch (Exception e)
@@ -93,7 +102,15 @@ public class SupportManager : ISupportManager
       public async Task<List<SupportRequest>> ListSupportRequestsAsync(ClaimsPrincipal user)
       {
             var userId = _userManager.GetUserId(user) ?? throw new InvalidOperationException("User not found.");
-            return await _context.SupportRequests.Where(s => s.CustomerId == userId).ToListAsync();
+
+            // employee can get any support request
+            if (user.IsInRole("Employee"))
+            {
+                  return await _context.SupportRequests.OrderByDescending(s => s.CreatedAt).ToListAsync();
+            }
+            return await _context.SupportRequests.Where(s => s.CustomerId == userId)
+                  .OrderByDescending(s => s.CreatedAt)
+                  .ToListAsync();
       }
 
       public async Task<SupportRequest> GetSupportRequestAsync(string id, ClaimsPrincipal user)
@@ -105,11 +122,17 @@ public class SupportManager : ISupportManager
 
                   var userId = _userManager.GetUserId(user) ??
                         throw new InvalidOperationException("User not found.");
-                  if (supportRequest.CustomerId != userId)
+
+                  // employee can get any support request
+                  if (user.IsInRole("Employee") || supportRequest.CustomerId == userId)
+                  {
+                        return await _context.SupportRequests.FindAsync(id) ??
+                              throw new DbUpdateConcurrencyException("Support request not found.");
+                  }
+                  else
                   {
                         throw new InvalidOperationException("User not authorized." + userId);
                   }
-                  return supportRequest;
             }
             catch (Exception e)
             {
@@ -121,18 +144,5 @@ public class SupportManager : ISupportManager
       {
             var userId = _userManager.GetUserId(user) ?? throw new InvalidOperationException("User not found.");
             return userId;
-      }
-
-      // Agent methods
-      // list all support requests
-      public Task<List<SupportRequest>> ListAllSupportRequestsAsync(ClaimsPrincipal user)
-      {
-            // check if user is employee
-            bool isAgent = user.IsInRole("Employee");
-            if (!isAgent)
-            {
-                  throw new InvalidOperationException("User not authorized.");
-            }
-            return _context.SupportRequests.ToListAsync();
       }
 }

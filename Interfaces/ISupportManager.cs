@@ -13,7 +13,7 @@ public interface ISupportManager
       * - Get
       * - List
       */
-      Task<SupportRequest> CreateSupportRequestAsync(string title, string description, string userId);
+      Task<SupportRequest> CreateSupportRequestAsync(string title, string description, ClaimsPrincipal user);
 
       Task<SupportRequest> EditSupportRequestAsync(string id, string title, string description, ClaimsPrincipal user);
 
@@ -22,12 +22,6 @@ public interface ISupportManager
       Task<SupportRequest> GetSupportRequestAsync(string id, ClaimsPrincipal user);
 
       Task<List<SupportRequest>> ListSupportRequestsAsync(ClaimsPrincipal user);
-
-      /*
-      * Agent
-      * - List all support requests
-      */
-      Task<List<SupportRequest>> ListAllSupportRequestsAsync(ClaimsPrincipal user);
 
       string GetUserId(ClaimsPrincipal user);
 }

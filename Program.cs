@@ -53,9 +53,20 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+/* 
+* Map areas by user role
+* Employee for company area
+* User for default area
+*/
+app.MapAreaControllerRoute(
+    name: "Company",
+    areaName: "Company",
+    pattern: "Company/{controller=Home}/{action=Index}/{id?}");
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 app.MapRazorPages();
 
 app.Run();

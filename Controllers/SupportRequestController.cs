@@ -137,7 +137,6 @@ namespace LinkU.Controllers
             try
             {
                 var supportRequest = await _supportManager.GetSupportRequestAsync(id, User);
-
                 return View(supportRequest);
             }
             catch (Exception e)

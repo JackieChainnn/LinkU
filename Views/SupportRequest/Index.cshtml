@@ -55,7 +55,14 @@
                 <td>
                     <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
                     <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    <a asp-action="Delete" asp-route-id="@item.Id">Delete</a> |
+                    @* display the link to create response if user is employee *@
+                    @if (User.IsInRole("Employee"))
+                    {
+                        <a asp-area="Company" asp-controller="SupportResponse" asp-action="Create"
+                            asp-route-id="@item.Id">Create
+                            Response |</a>
+                    }
                 </td>
             </tr>
         }

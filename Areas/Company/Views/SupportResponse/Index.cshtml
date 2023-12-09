@@ -1,17 +1,21 @@
-@model IEnumerable<LinkU.Models.SupportRequest>
+@model IEnumerable<LinkU.Models.SupportResponse>
 @{
     ViewData["Title"] = "Agent Support";
 }
 
 <div>
+
     <table class="table">
         <caption>
-            <h1>List of Support Request</h1>
+            <h1>List of Support Response</h1>
         </caption>
         <thead>
             <tr>
                 <th>
-                    @Html.DisplayNameFor(model => model.Customer)
+                    @Html.DisplayNameFor(model => model.AgentId)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.RequestId)
                 </th>
                 <th>
                     @Html.DisplayNameFor(model => model.Title)
@@ -20,13 +24,7 @@
                     @Html.DisplayNameFor(model => model.Description)
                 </th>
                 <th>
-                    @Html.DisplayNameFor(model => model.Status)
-                </th>
-                <th>
                     @Html.DisplayNameFor(model => model.CreatedAt)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.UpdatedAt)
                 </th>
                 <th></th>
             </tr>
@@ -36,7 +34,10 @@
             {
                 <tr>
                     <td>
-                        @Html.DisplayFor(modelItem => item.CustomerId)
+                        @Html.DisplayFor(modelItem => item.AgentId)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.RequestId)
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.Title)
@@ -45,24 +46,16 @@
                         @Html.DisplayFor(modelItem => item.Description)
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Status)
-                    </td>
-                    <td>
                         @Html.DisplayFor(modelItem => item.CreatedAt)
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.UpdatedAt)
-                    </td>
-                    <td>
-                        <a asp-controller="SupportResponse" asp-action="Create" asp-route-id="@item.Id">Create response</a>
-                        |
-                        <a asp-area="" asp-controller="SupportRequest" asp-action="Details"
-                            asp-route-id="@item.Id">Details</a> |
-                        <a asp-area="" asp-controller="SupportRequest" asp-action="Delete"
-                            asp-route-id="@item.Id">Delete</a>
+                        <a asp-controller="SupportResponse" asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                        <a asp-controller="SupportResponse" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
+    <a asp-area="" asp-controller="SupportRequest" asp-action="Index" asp class="btn btn-primary"> List of Request
+    </a>
 </div>

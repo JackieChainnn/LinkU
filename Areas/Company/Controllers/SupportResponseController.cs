@@ -9,6 +9,7 @@ using LinkU.Areas.Identity.Data;
 using LinkU.Models;
 using Microsoft.AspNetCore.Authorization;
 using LinkU.Interfaces;
+using LinkU.ViewModels;
 
 namespace LinkU.Areas.Company.Controllers
 {
@@ -27,14 +28,23 @@ namespace LinkU.Areas.Company.Controllers
         }
 
         // GET: Company/SupportResponse
+        [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
-            IEnumerable<SupportRequest> supportRequests = await _supportManager.ListSupportRequestsAsync(User);
-            if (supportRequests == null)
+            try
             {
+                IEnumerable<SupportResponse> supportResponses = await _supportManager.ListSupportResponsesAsync(User);
+                if (supportResponses == null)
+                {
+                    return NotFound();
+                }
+                return View(supportResponses);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
                 return NotFound();
             }
-            return View(supportRequests);
         }
 
         // GET: Company/SupportResponse/Details/5
@@ -45,10 +55,7 @@ namespace LinkU.Areas.Company.Controllers
                 return NotFound();
             }
 
-            var supportResponse = await _context.SupportResponses
-                .Include(s => s.Agent)
-                .Include(s => s.Request)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var supportResponse = await _supportManager.GetSupportResponseAsync(id, User);
             if (supportResponse == null)
             {
                 return NotFound();
@@ -58,10 +65,29 @@ namespace LinkU.Areas.Company.Controllers
         }
 
         // GET: Company/SupportResponse/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create(string id)
         {
-            ViewData["RequestId"] = new SelectList(_context.SupportRequests, "Id", "Id");
-            return View();
+            try
+            {
+                // get support request by id to display title and description
+                var supportRequest = await _supportManager.GetSupportRequestAsync(id, User);
+                if (supportRequest == null)
+                {
+                    return NotFound();
+                }
+                var model = new SupportViewModel
+                {
+                    SupportRequestId = supportRequest.Id,
+                    Title = supportRequest.Title,
+                    Description = supportRequest.Description!
+                };
+                return View(model);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                return NotFound();
+            }
         }
 
         // POST: Company/SupportResponse/Create
@@ -69,91 +95,52 @@ namespace LinkU.Areas.Company.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("RequestId,Title,Description,CreatedAt")] SupportResponse supportResponse)
+        public async Task<IActionResult> Create([Bind("SupportRequestId,Title,Description")] SupportViewModel model)
         {
-            if (ModelState.IsValid)
-            {
-                _context.Add(supportResponse);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["RequestId"] = new SelectList(_context.SupportRequests, "Id", "Id", supportResponse.RequestId);
-            return View(supportResponse);
-        }
-
-        // GET: Company/SupportResponse/Edit/5
-        public async Task<IActionResult> Edit(string id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var supportResponse = await _context.SupportResponses.FindAsync(id);
-            if (supportResponse == null)
-            {
-                return NotFound();
-            }
-            ViewData["AgentId"] = new SelectList(_context.Set<Employee>(), "Id", "Id", supportResponse.AgentId);
-            ViewData["RequestId"] = new SelectList(_context.SupportRequests, "Id", "Id", supportResponse.RequestId);
-            return View(supportResponse);
-        }
-
-        // POST: Company/SupportResponse/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Id,AgentId,RequestId,Title,Description,CreatedAt")] SupportResponse supportResponse)
-        {
-            if (id != supportResponse.Id)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(supportResponse);
-                    await _context.SaveChangesAsync();
+                    var response = await _supportManager.CreateSupportResponseAsync(model.SupportRequestId!, model.Title, model.Description, User);
+                    // redirect to details of support response by id
+                    if (response != null)
+                    {
+                        return RedirectToAction(nameof(Index));
+                    }
+                    return NotFound();
                 }
-                catch (DbUpdateConcurrencyException)
+                catch (Exception e)
                 {
-                    if (!SupportResponseExists(supportResponse.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    Console.WriteLine(e.Message);
+                    return NotFound();
                 }
-                return RedirectToAction(nameof(Index));
             }
-            ViewData["AgentId"] = new SelectList(_context.Set<Employee>(), "Id", "Id", supportResponse.AgentId);
-            ViewData["RequestId"] = new SelectList(_context.SupportRequests, "Id", "Id", supportResponse.RequestId);
-            return View(supportResponse);
+            return View(model);
         }
 
         // GET: Company/SupportResponse/Delete/5
         public async Task<IActionResult> Delete(string id)
         {
-            if (id == null)
+            try
             {
+                if (id == null)
+                {
+                    return NotFound();
+                }
+
+                var supportResponse = await _supportManager.GetSupportResponseAsync(id, User);
+                if (supportResponse == null)
+                {
+                    return NotFound();
+                }
+
+                return View(supportResponse);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
                 return NotFound();
             }
-
-            var supportResponse = await _context.SupportResponses
-                .Include(s => s.Agent)
-                .Include(s => s.Request)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (supportResponse == null)
-            {
-                return NotFound();
-            }
-
-            return View(supportResponse);
         }
 
         // POST: Company/SupportResponse/Delete/5

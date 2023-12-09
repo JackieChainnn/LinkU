@@ -1,0 +1,61 @@
+@model IEnumerable<LinkU.Models.SupportResponse>
+@{
+    ViewData["Title"] = "Agent Support";
+}
+
+<div>
+
+    <table class="table">
+        <caption>
+            <h1>List of Support Response</h1>
+        </caption>
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.AgentId)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.RequestId)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Title)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Description)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.CreatedAt)
+                </th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.AgentId)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.RequestId)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Title)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.CreatedAt)
+                    </td>
+                    <td>
+                        <a asp-controller="SupportResponse" asp-action="Details" asp-route-id="@item.Id">Details</a> |
+                        <a asp-controller="SupportResponse" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <a asp-area="" asp-controller="SupportRequest" asp-action="Index" asp class="btn btn-primary"> List of Request
+    </a>
+</div>

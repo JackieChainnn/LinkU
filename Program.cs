@@ -21,7 +21,11 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages(options =>
-    options.Conventions.AuthorizePage("/Admin/Index"));
+{
+    options.Conventions.AuthorizePage("/Admin/Index");
+    // authorize all pages in Company area
+    options.Conventions.AuthorizeAreaFolder("Company", "/");
+});
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<ISupportManager, SupportManager>();
 builder.Services.AddSingleton(new QRCodeService(new QRCodeGenerator()));
@@ -53,9 +57,20 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+/* 
+* Map areas by user role
+* Employee for company area
+* User for default area
+*/
+app.MapAreaControllerRoute(
+    name: "Company",
+    areaName: "Company",
+    pattern: "Company/{controller=Home}/{action=Index}/{id?}");
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
 app.MapRazorPages();
 
 app.Run();

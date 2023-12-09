@@ -26,12 +26,19 @@
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home"
                                 asp-action="Privacy">Privacy</a>
                         </li>
-                        @if (User.IsInRole("Administrator"))
+                        @if (User.IsInRole("Employee"))
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Admin"
-                                    asp-action="Index">Admin</a>
+                                <a class="nav-link text-dark" asp-area="Company" asp-controller="Home"
+                                    asp-action="Index">Working Area</a>
                             </li>
+                            @if (User.IsInRole("Administrator"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Admin"
+                                        asp-action="Index">Admin</a>
+                                </li>
+                            }
                         }
                     </ul>
                     @* Add the sign-in and registration links *@

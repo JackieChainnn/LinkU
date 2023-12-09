@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Identity;
 using LinkU.Interfaces;
 using LinkU.ViewModels;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LinkU.Controllers
 {
@@ -26,7 +27,16 @@ namespace LinkU.Controllers
         public async Task<IActionResult> Index()
         {
             // return support requests of current user
-            return View(await _supportManager.ListSupportRequestsAsync(User));
+            try
+            {
+                var supportRequests = await _supportManager.ListSupportRequestsAsync(User);
+                return View(supportRequests);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return NotFound();
+            }
         }
 
         // GET: SupportRequest/Details/5
@@ -57,15 +67,13 @@ namespace LinkU.Controllers
         // POST: SupportRequest/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Title,Description")] SupportRequestViewModel model)
+        public async Task<IActionResult> Create([Bind("Title,Description")] SupportViewModel model)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-
-                    string userId = _supportManager.GetUserId(User);
-                    await _supportManager.CreateSupportRequestAsync(model.Title, model.Description, userId);
+                    await _supportManager.CreateSupportRequestAsync(model.Title, model.Description, User);
                     return RedirectToAction(nameof(Index));
                 }
                 catch (Exception e)
@@ -105,7 +113,7 @@ namespace LinkU.Controllers
         // POST: SupportRequest/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("Id,Title,Description")] SupportRequestViewModel model)
+        public async Task<IActionResult> Edit(string id, [Bind("Id,Title,Description")] SupportViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -129,11 +137,6 @@ namespace LinkU.Controllers
             try
             {
                 var supportRequest = await _supportManager.GetSupportRequestAsync(id, User);
-                if (supportRequest == null ||
-                    supportRequest.CustomerId != _supportManager.GetUserId(User))
-                {
-                    throw new InvalidOperationException("Try to perform unauthorized operation.");
-                }
                 return View(supportRequest);
             }
             catch (Exception e)

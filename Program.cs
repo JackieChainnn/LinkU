@@ -21,7 +21,11 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages(options =>
-    options.Conventions.AuthorizePage("/Admin/Index"));
+{
+    options.Conventions.AuthorizePage("/Admin/Index");
+    // authorize all pages in Company area
+    options.Conventions.AuthorizeAreaFolder("Company", "/");
+});
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<ISupportManager, SupportManager>();
 builder.Services.AddSingleton(new QRCodeService(new QRCodeGenerator()));

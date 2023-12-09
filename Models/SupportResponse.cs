@@ -10,9 +10,8 @@ namespace LinkU.Models;
 [Table("SupportResponse")]
 public partial class SupportResponse
 {
-    [Key]
     [Column("ID")]
-    public string Id { get; set; } = null!;
+    public string Id { get; private set; }
 
     [Column("AgentID")]
     [StringLength(450)]
@@ -37,4 +36,8 @@ public partial class SupportResponse
     [ForeignKey("RequestId")]
     [InverseProperty("SupportResponses")]
     public virtual SupportRequest? Request { get; set; }
+    public SupportResponse()
+    {
+        Id = Guid.NewGuid().ToString()[..6];
+    }
 }

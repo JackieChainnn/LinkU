@@ -2,6 +2,7 @@
 using LinkU.Areas.Identity.Data;
 using LinkU.Interfaces;
 using LinkU.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,32 +12,35 @@ public class SupportManager : ISupportManager
 {
       private readonly AppIdentityDbContext _context;
       private readonly UserManager<ApplicationUser> _userManager;
-      private readonly ILogger<SupportManager> _logger;
 
       public SupportManager(AppIdentityDbContext context,
-            UserManager<ApplicationUser> userManager,
-            ILogger<SupportManager> logger)
+            UserManager<ApplicationUser> userManager)
       {
             _context = context;
             _userManager = userManager;
-            _logger = logger;
       }
       //  ClaimsPrincipal is used to access the user's information in a secure and standardized way.
       public async Task<SupportRequest> CreateSupportRequestAsync(string title, string description, ClaimsPrincipal user)
       {
 
-            var userId = _userManager.GetUserId(user) ?? throw new InvalidOperationException("User not found.");
-            var supportRequest = new SupportRequest
+            try
             {
-                  Title = title,
-                  Description = description,
-                  CustomerId = userId
-            };
+                  var userId = _userManager.GetUserId(user) ?? throw new InvalidOperationException("User not found.");
+                  var supportRequest = new SupportRequest
+                  {
+                        Title = title,
+                        Description = description,
+                        CustomerId = userId
+                  };
+                  _context.Add(supportRequest);
+                  await _context.SaveChangesAsync();
 
-            _context.Add(supportRequest);
-            await _context.SaveChangesAsync();
-
-            return supportRequest;
+                  return supportRequest;
+            }
+            catch (Exception e)
+            {
+                  throw new DbUpdateConcurrencyException(e.Message);
+            }
       }
 
       public async Task<bool> DeleteSupportRequestAsync(string id, ClaimsPrincipal user)
@@ -63,8 +67,7 @@ public class SupportManager : ISupportManager
             }
             catch (Exception e)
             {
-                  Console.WriteLine(e.Message);
-                  return false;
+                  throw new DbUpdateConcurrencyException(e.Message);
             }
       }
 
@@ -72,11 +75,11 @@ public class SupportManager : ISupportManager
       {
             try
             {
-                  var supportRequest = await _context.SupportRequests.FindAsync(id)
-                        ?? throw new DbUpdateConcurrencyException("Support request not found.");
-
                   string userId = _userManager.GetUserId(user) ??
                         throw new InvalidOperationException("User not found.");
+
+                  var supportRequest = await _context.SupportRequests.FindAsync(id)
+                        ?? throw new DbUpdateConcurrencyException("Support request not found.");
 
                   // employee can edit any support request
                   if (user.IsInRole("Employee") || supportRequest.CustomerId == userId)
@@ -144,5 +147,120 @@ public class SupportManager : ISupportManager
       {
             var userId = _userManager.GetUserId(user) ?? throw new InvalidOperationException("User not found.");
             return userId;
+      }
+
+      /*
+      * Support Response
+      * - Create
+      * - Delete
+      * - Get
+      * - List
+      */
+      [Authorize(Roles = "Employee")]
+      public async Task<SupportResponse> CreateSupportResponseAsync(string supportRequestId, string title, string description, ClaimsPrincipal user)
+      {
+            try
+            {
+                  var userId = _userManager.GetUserId(user) ?? throw new InvalidOperationException("User not found.");
+
+                  var supportResponse = new SupportResponse
+                  {
+                        AgentId = userId,
+                        RequestId = supportRequestId,
+                        Title = title,
+                        Description = description
+                  };
+                  _context.Add(supportResponse);
+
+                  // update support request status
+                  var supportRequest = await _context.SupportRequests.FindAsync(supportRequestId) ??
+                        throw new DbUpdateConcurrencyException("Support request not found.");
+                  supportRequest.Status = SupportRequestStatus.Pending;
+
+                  await _context.SaveChangesAsync();
+
+                  return supportResponse;
+            }
+            catch (Exception e)
+            {
+                  throw new DbUpdateConcurrencyException(e.Message);
+            }
+      }
+
+      public async Task<SupportResponse> GetSupportResponseAsync(string id, ClaimsPrincipal user)
+      {
+            try
+            {
+                  // return support response include agent info
+                  var supportResponse = await _context.SupportResponses
+                        .FirstOrDefaultAsync(s => s.Id == id) ??
+                        throw new DbUpdateConcurrencyException("Support response not found.");
+
+                  var userId = _userManager.GetUserId(user) ??
+                        throw new InvalidOperationException("User not found.");
+
+                  // employee can get any support response
+                  if (user.IsInRole("Employee") || supportResponse.AgentId == userId)
+                  {
+                        return await _context.SupportResponses.FindAsync(id) ??
+                              throw new DbUpdateConcurrencyException("Support response not found.");
+                  }
+                  else
+                  {
+                        throw new InvalidOperationException("User not authorized." + userId);
+                  }
+            }
+            catch (Exception e)
+            {
+                  throw new DbUpdateConcurrencyException(e.Message);
+            }
+      }
+
+      public Task<List<SupportResponse>> ListSupportResponsesAsync(ClaimsPrincipal user)
+      {
+            try
+            {
+                  var userId = _userManager.GetUserId(user) ?? throw new InvalidOperationException("User not found.");
+
+                  // employee can get any support response
+                  if (user.IsInRole("Employee"))
+                  {
+                        return _context.SupportResponses.OrderByDescending(s => s.CreatedAt).ToListAsync();
+                  }
+                  return _context.SupportResponses.Where(s => s.AgentId == userId)
+                      .OrderByDescending(s => s.CreatedAt)
+                      .ToListAsync();
+            }
+            catch (Exception e)
+            {
+                  throw new DbUpdateConcurrencyException(e.Message);
+            }
+      }
+
+      [Authorize(Roles = "Employee")]
+      public async Task<bool> DeleteSupportResponseAsync(string id, ClaimsPrincipal user)
+      {
+            try
+            {
+                  var userId = GetUserId(user) ?? throw new InvalidOperationException("User not found.");
+                  var supportResponse = await _context.SupportResponses.FindAsync(id) ??
+                        throw new DbUpdateConcurrencyException("Support response not found.");
+
+                  if (supportResponse.AgentId == userId)
+                  {
+                        _context.SupportResponses.Remove(supportResponse);
+                        await _context.SaveChangesAsync();
+                  }
+                  else
+                  {
+                        throw new InvalidOperationException("User not authorized." + userId);
+                  }
+                  return true;
+            }
+            catch (Exception e)
+            {
+                  throw new DbUpdateConcurrencyException(e.Message);
+            }
+
       }
 }

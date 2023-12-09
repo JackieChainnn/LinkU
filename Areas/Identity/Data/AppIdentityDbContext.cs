@@ -152,6 +152,7 @@ public partial class AppIdentityDbContext : IdentityDbContext<ApplicationUser>
 
         modelBuilder.Entity<SupportResponse>(entity =>
         {
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
             entity.HasOne(d => d.Agent).WithMany(p => p.SupportResponses)
                 .OnDelete(DeleteBehavior.ClientSetNull);
 

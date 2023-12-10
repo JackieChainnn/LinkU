@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using LinkU.Areas.Identity.Data
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -129,8 +134,20 @@
                             <div class="p-3" style="max-width: 900px;">
                                 <h5 class="text-white text-uppercase mb-3 animated slideInDown">Creative & Innovative
                                 </h5>
-                                <h1 class="display-1 text-white mb-md-4 animated zoomIn">Creative & Innovative Digital
-                                    Solution</h1>
+                                @if (SignInManager.IsSignedIn(User))
+                                {
+                                    <h1 class="display-6 text-white mb-md-4 animated zoomIn">
+                                        Welcome @UserManager.GetUserName(User)!
+                                    </h1>
+                                    <h6 class="display-8 text-white mb-md-4 animated zoomIn">
+                                        User Id: @UserManager.GetUserId(User)!
+                                    </h6>
+                                }
+                                else
+                                {
+                                    <h1 class="display-1 text-white mb-md-4 animated zoomIn">Creative & Innovative Digital
+                                        Solution</h1>
+                                }
                                 <a asp-controller="SupportRequest" asp-action="Index"
                                     class="btn btn-outline-light py-md-3 px-md-5 animated slideInRight">Contact
                                     Us</a>

@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace LinkU.Controllers
 {
+    [Authorize] // use to redirect to login page if user is not logged in
     public class SupportRequestController : Controller
     {
         private readonly ISupportManager _supportManager;

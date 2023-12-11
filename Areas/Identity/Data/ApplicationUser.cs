@@ -10,6 +10,12 @@ public class ApplicationUser : IdentityUser
 
       [StringLength(450)]
       public string? Avatar { get; set; }
+      [DataType(DataType.Date)]
+      public DateOnly? Birthday { get; set; }
+
+      // Documentation: applicant resume, company profile. 
+      [StringLength(450)]
+      public string? Documentation { get; set; }
 
       [DataType(DataType.Date)]
       [Display(Name = "Created At")]

@@ -6,18 +6,12 @@ namespace LinkU.Areas.Identity.Data;
 
 public class Applicant : ApplicationUser
 {
-      [DataType(DataType.Date)]
-      public DateOnly? Birthday { get; set; }
-
       [Display(Name = "Experience Years")]
       public int? ExperienceYears { get; set; }
 
       [Display(Name = "Status")]
       [EnumDataType(typeof(ApplicantStatus))]
       public ApplicantStatus Status { get; set; }
-
-      [StringLength(450)]
-      public string? Resume { get; set; }
 
       [Column("HRId")]
       [StringLength(450)]

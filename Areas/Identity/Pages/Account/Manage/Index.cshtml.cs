@@ -4,6 +4,7 @@
 
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using LinkU.Areas.Identity.Data;
@@ -15,13 +16,16 @@ namespace LinkU.Areas.Identity.Pages.Account.Manage
 {
     public class IndexModel : PageModel
     {
+        private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
 
         public IndexModel(
+            IWebHostEnvironment webHostEnvironment,
             UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager)
         {
+            _webHostEnvironment = webHostEnvironment;
             _userManager = userManager;
             _signInManager = signInManager;
         }
@@ -52,13 +56,24 @@ namespace LinkU.Areas.Identity.Pages.Account.Manage
         /// </summary>
         public class InputModel
         {
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
             [Phone]
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
+            [StringLength(450)]
+            public string Address { get; set; }
+            [DataType(DataType.Date)]
+            public DateOnly? Birthday { get; set; }
+
+            [NotMapped]
+            [DataType(DataType.Upload)]
+            public IFormFile Avatar { get; set; }
+            public string AvatarPath { get; set; }
+
+            // Documentation: applicant resume, company profile. 
+            [NotMapped]
+            [DataType(DataType.Upload)]
+            public IFormFile Documentation { get; set; }
+            public string DocumentationPath { get; set; }
         }
 
         private async Task LoadAsync(ApplicationUser user)
@@ -70,7 +85,11 @@ namespace LinkU.Areas.Identity.Pages.Account.Manage
 
             Input = new InputModel
             {
-                PhoneNumber = phoneNumber
+                PhoneNumber = phoneNumber,
+                Address = user.Address,
+                Birthday = user.Birthday,
+                AvatarPath = user.AvatarPath,
+                DocumentationPath = user.DocumentationPath
             };
         }
 
@@ -100,6 +119,25 @@ namespace LinkU.Areas.Identity.Pages.Account.Manage
                 return Page();
             }
 
+            user.Address = Input.Address;
+            user.Birthday = Input.Birthday;
+            var avatar = Input.Avatar;
+            var document = Input.Documentation;
+
+            // Save file to wwwroot
+            if (avatar != null)
+            {
+                string avatarPath = await PostSaveFile(avatar, "users/avatars");
+                user.AvatarPath = avatarPath;
+            }
+            if (document != null)
+            {
+                string documentationPath = await PostSaveFile(document, "users/documents");
+                user.DocumentationPath = documentationPath;
+            }
+
+            await _userManager.UpdateAsync(user);
+
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
             if (Input.PhoneNumber != phoneNumber)
             {
@@ -114,6 +152,29 @@ namespace LinkU.Areas.Identity.Pages.Account.Manage
             await _signInManager.RefreshSignInAsync(user);
             StatusMessage = "Your profile has been updated";
             return RedirectToPage();
+        }
+
+        // TODO: [EP-65] prevent submit file with invalid extension
+        private async Task<string> PostSaveFile(IFormFile formFile, string directory)
+        {
+            try
+            {
+                var uploadDir = Directory.CreateDirectory(Path.Combine(_webHostEnvironment.WebRootPath, directory)).FullName;
+
+                // append random name for security purposes
+                var fileName = Guid.NewGuid().ToString() + "_" + formFile.FileName;
+                var filePath = Path.Combine(uploadDir, fileName);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await formFile.CopyToAsync(fileStream);
+                    fileStream.Close();
+                }
+                return Path.Combine("~", directory, fileName);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }

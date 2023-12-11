@@ -9,22 +9,117 @@
 <partial name="_StatusMessage" for="StatusMessage" />
 <div class="row">
     <div class="col-md-6">
-        <form id="profile-form" method="post">
+        <form id="profile-form" method="post" enctype="multipart/form-data">
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
             <div class="form-floating mb-3">
                 <input asp-for="Username" class="form-control" placeholder="Please choose your username." disabled />
                 <label asp-for="Username" class="form-label"></label>
             </div>
             <div class="form-floating mb-3">
-                <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Please enter your phone number."/>
+                <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Please enter your phone number." />
                 <label asp-for="Input.PhoneNumber" class="form-label"></label>
                 <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
             </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Address" class="form-control" placeholder="Please enter your address." />
+                <label asp-for="Input.Address" class="form-label"></label>
+                <span asp-validation-for="Input.Address" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Birthday" class="form-control" placeholder="Set your birthday." />
+                <label asp-for="Input.Birthday" class="form-label"></label>
+                <span asp-validation-for="Input.Birthday" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Avatar" class="form-control" type="file" accept="image/*" />
+                <label asp-for="Input.Avatar" class="form-label"></label>
+                <span asp-validation-for="Input.Avatar" class="text-danger"></span>
+            </div>
+            @if (User.IsInRole("Employee"))
+            {
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.Documentation" class="form-control" type="file" />
+                    <label asp-for="Input.Documentation" class="form-label"></label>
+                    <span asp-validation-for="Input.Documentation" class="text-danger"></span>
+                </div>
+            }
+            else
+            {
+                <div class="form-floating mb-3">
+                    <input asp-for="Input.Documentation" class="form-control" type="file" />
+                    <label asp-for="Input.Documentation" class="form-label">Resume</label>
+                    <span asp-validation-for="Input.Documentation" class="text-danger"></span>
+                </div>
+            }
             <button id="update-profile-button" type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
         </form>
+    </div>
+    <div class="col-md-3">
+        <dl>
+
+            <dd class="col-sm-10">
+                @if (Model.Input.DocumentationPath != null)
+                {
+                <dt class="col-sm-10">
+                        @if (User.IsInRole("Applicant"))
+                        {
+                        <h3>Applicant's Resume</h3>
+                        }
+                        else
+                        {
+                        <h3>Employee's Documentation</h3>
+                        }
+                </dt>
+                <!-- Trigger the Modal -->
+                <img src="@Url.Content(Model.Input.DocumentationPath)" alt="document" id="myImg"
+                    style="width:100%;max-width:260px" />
+                }
+                else
+                {
+                    if (User.IsInRole("Applicant"))
+                    {
+                    <h4>
+                        Increase your chances of getting hired by adding your resume.
+                    </h4>
+                    }
+                    else
+                    {
+                    <h4>
+                        Add your documentation for your work.
+                    </h4>
+                    }
+
+                }
+
+            <!-- The Modal -->
+            <div id="myModal" class="modal">
+
+                <!-- The Close Button -->
+                <span class="close">&times;</span>
+
+                <!-- Modal Content (The Image) -->
+                <img class="modal-content" alt="user avatar" id="img01">
+
+                <!-- Modal Caption (Image Text) -->
+                <div id="caption"></div>
+            </div>
+            </dd>
+        </dl>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    @* script to prevent invalid data submittion *@
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        $(function () {
+            $('form').submit(function () {
+                if ($(this).valid()) {
+                    $('input[type="submit"]', this).attr('disabled', 'disabled');
+                }
+            });
+        });
+    </script>
 }

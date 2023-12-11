@@ -7,9 +7,19 @@
 <ul class="navbar-nav">
     @if (SignInManager.IsSignedIn(User))
     {
+        var user = await UserManager.GetUserAsync(User);
+        var avatar = user?.AvatarPath;
         <li class="nav-item">
-            <a id="manage" class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index"
-                title="Manage">@UserManager.GetUserName(User)</a>
+            <a id="manage" class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Manage/Index" title="Manage">
+                @if (avatar != null)
+                {
+                    <img src="@Url.Content(avatar)" alt=" avatar" style="height: 30px; width: 30px; border-radius: 50%;" />
+                }
+                else
+                {
+                    @UserManager.GetUserName(User)
+                }
+            </a>
         </li>
         <li class="nav-item">
             <form id="logoutForm" class="form-inline" asp-area="Identity" asp-page="/Account/Logout"

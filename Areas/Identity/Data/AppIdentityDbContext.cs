@@ -48,17 +48,17 @@ public partial class AppIdentityDbContext : IdentityDbContext<ApplicationUser>
                     "ApplicantSkill",
                     r => r.HasOne<Skill>().WithMany()
                         .HasForeignKey("SkillId")
-                        .OnDelete(DeleteBehavior.ClientSetNull),
+                        .OnDelete(DeleteBehavior.Cascade),
                     l => l.HasOne<Applicant>().WithMany()
                         .HasForeignKey("ApplicantId")
-                        .OnDelete(DeleteBehavior.ClientSetNull),
-                    j =>
-                    {
-                        j.HasKey("ApplicantId", "SkillId");
-                        j.ToTable("ApplicantSkill");
-                        j.IndexerProperty<string>("ApplicantId").HasColumnName("ApplicantID");
-                        j.IndexerProperty<string>("SkillId").HasColumnName("SkillID");
-                    });
+                        .OnDelete(DeleteBehavior.Cascade),
+                        j =>
+                        {
+                            j.HasKey("ApplicantId", "SkillId");
+                            j.ToTable("ApplicantSkill");
+                            j.IndexerProperty<string>("ApplicantId").HasColumnName("ApplicantID");
+                            j.IndexerProperty<string>("SkillId").HasColumnName("SkillID");
+                        });
         });
 
         modelBuilder.Entity<Application>(entity =>
@@ -71,9 +71,6 @@ public partial class AppIdentityDbContext : IdentityDbContext<ApplicationUser>
             entity.HasOne(d => d.JobOpening).WithMany(p => p.Applications)
                 .OnDelete(DeleteBehavior.ClientSetNull);
         });
-
-
-
 
         modelBuilder.Entity<Department>(entity =>
         {
@@ -119,7 +116,7 @@ public partial class AppIdentityDbContext : IdentityDbContext<ApplicationUser>
 
             entity.HasMany(d => d.Skills).WithMany(p => p.JobOpenings)
                 .UsingEntity<Dictionary<string, object>>(
-                    "Requirement",
+                    "JobOpeningSkill",
                     r => r.HasOne<Skill>().WithMany()
                         .HasForeignKey("SkillId")
                         .OnDelete(DeleteBehavior.ClientSetNull),
@@ -129,7 +126,7 @@ public partial class AppIdentityDbContext : IdentityDbContext<ApplicationUser>
                     j =>
                     {
                         j.HasKey("JobOpeningId", "SkillId");
-                        j.ToTable("Requirement");
+                        j.ToTable("JobOpeningSkill");
                         j.IndexerProperty<string>("JobOpeningId").HasColumnName("JobOpeningID");
                         j.IndexerProperty<string>("SkillId").HasColumnName("SkillID");
                     });
